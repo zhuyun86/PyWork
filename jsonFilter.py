@@ -5,9 +5,12 @@ import os
 import sys
 import json
 import shutil
+import tempfile
 from functools import partial
 from PyQt5.QtGui import *
 from PyQt5.Qt import *
+
+ExeFile = 'D:/Dcm2NiiConverter/dcm2niiConverter.exe'
 
 sys.path.append(r'D:\sigmaUtil')
 # from radiomicsHandle import run
@@ -39,6 +42,9 @@ class MainWindow(QDialog):
         self.rad_nii_source_path = ''
         self.rad_label_source_path = ''
         self.rad_json_source_path = ''
+        self.dicom_folder_path = ''
+        self.nii_folder_path = ''
+        self.hospital_name = ''
         self.filter_checkBoxs = {}
         self.rad_checkBoxs = {}
         self.save_absolute_path = r'D:\ExcelResults'
@@ -46,13 +52,14 @@ class MainWindow(QDialog):
 
     def setui(self):
         group_filter = QGroupBox('Filter')
+        group_converter = QGroupBox('Converter')
         group_radiomics = QGroupBox('Radiomics')
         inputFileLabel = QLabel('inputFolder')
         self.inputFileLineEdit = QLineEdit()
         inputFileButton = QPushButton('inputFolderSelect')
         outputFileLabel = QLabel('outputFolder')
         self.outputFileLineEdit = QLineEdit()
-        outputFileButton = QPushButton('outputFolderSelect')
+        outputFileButton = QPushButton('outputFolderSelect')        
 
         grid_folder = QGridLayout()
         grid_folder.addWidget(inputFileLabel, 0, 0)
@@ -117,6 +124,33 @@ class MainWindow(QDialog):
 
         mainLayout.addWidget(self.hintTextEdit)
 
+        #Converter UI
+        dicomInputLabel = QLabel('DicomInputFolder:')
+        self.dicomLineEdit = QLineEdit(self)
+        self.dicomLineEdit.setReadOnly(True)
+        dicomButton = QPushButton('DicomFolderSelect', self)
+        niiOutputLabel = QLabel('NiiOutputFolder:')
+        self.niiLineEdit = QLineEdit(self)
+        self.niiLineEdit.setReadOnly(True)
+        niiButton = QPushButton('NiiFolderSelect', self)
+        HospitalLabel = QLabel('HospitalName:')
+        self.HospitalLineEdit = QLineEdit(self)
+        convertButton = QPushButton('Convert', self)
+
+        layout_Converter = QGridLayout(self)
+        layout_Converter.addWidget(dicomInputLabel, 0 ,0)
+        layout_Converter.addWidget(self.dicomLineEdit, 0 ,1)
+        layout_Converter.addWidget(dicomButton, 0 ,2)
+        layout_Converter.addWidget(niiOutputLabel, 1, 0)
+        layout_Converter.addWidget(self.niiLineEdit, 1, 1)
+        layout_Converter.addWidget(niiButton, 1, 2)
+        layout_Converter.addWidget(HospitalLabel, 2, 0)
+        layout_Converter.addWidget(self.HospitalLineEdit, 2, 1)
+        layout_Converter.addWidget(convertButton)
+  
+        group_converter.setLayout(layout_Converter)
+        mainLayout.addWidget(group_converter)
+
         mainLayout.addWidget(group_radiomics)
         layout_radiomics = QGridLayout()
         layout_radiomics.addWidget(selectFileLabel, 0, 0)
@@ -150,6 +184,10 @@ class MainWindow(QDialog):
         selectJsonButton.clicked.connect(self.inputJsonFileSelect)
         saveFileButton.clicked.connect(self.saveFileSelect)
         runButton.clicked.connect(self.run)
+        dicomButton.clicked.connect(self.dicomSelect)
+        niiButton.clicked.connect(self.niiSelect)
+        self.HospitalLineEdit.textChanged.connect(self.hospitalNameChanged)
+        convertButton.clicked.connect(self.convertDicom)
         for edit in [self.inputFileLineEdit, self.outputFileLineEdit, self.selectFileLineEdit, self.selectLabelLineEdit, self.selectJsonLineEdit, self.saveFileLineEdit]:
             edit.textChanged.connect(self.lineEditTextChanged)
             # edit.textChanged.connect(partial(self.lineEditTextChanged, edit))
@@ -291,6 +329,61 @@ class MainWindow(QDialog):
         save_absolute_path = QFileDialog.getExistingDirectory(self, 'Open Dir', os.getcwd())
         self.save_absolute_path = str(save_absolute_path)
         self.saveFileLineEdit.setText(self.save_absolute_path)
+
+    def dicomSelect(self):
+        dicom_folder_path = QFileDialog.getExistingDirectory(self, 'Open Dir', os.getcwd())
+        if dicom_folder_path == '':
+            return
+        self.dicom_folder_path = str(dicom_folder_path)
+        self.dicomLineEdit.setText(self.dicom_folder_path)
+
+    def niiSelect(self):
+        nii_folder_path = QFileDialog.getExistingDirectory(self, 'Open Dir', os.getcwd())
+        if nii_folder_path == '':
+            return
+        self.nii_folder_path = str(nii_folder_path)
+        self.niiLineEdit.setText(self.nii_folder_path)
+
+    def hospitalNameChanged(self, name):
+        self.hospital_name = name
+
+    def convertDicom(self):
+        if self.dicom_folder_path == '' or self.nii_folder_path == '':
+            return
+        else:
+            srcDir = self.dicom_folder_path
+            dstDir = self.nii_folder_path
+
+        if not os.path.exists(dstDir):
+            os.mkdir(dstDir)
+
+        dirList = os.listdir(srcDir)
+        for i in range(0, len(dirList)):
+            oldir = os.path.join(srcDir, dirList[i])
+
+            if os.path.isdir(oldir):
+                redir = oldir
+                if ' ' in oldir:
+                    redir = oldir.replace(' ', '_')
+                    os.rename(oldir, redir)
+
+                with tempfile.TemporaryDirectory() as tempDir:
+                    os.system('{} {} {} {}_%f'.format(ExeFile, redir, tempDir, self.hospital_name))
+                    self._moveMaxFile(tempDir, dstDir)
+
+    def _moveMaxFile(self, src, dst):
+        fileList = os.listdir(src)
+        if len(fileList) == 0:
+            return
+
+        maxFile = ''
+        maxSize = 0
+        for i in range(0, len(fileList)):
+            path = os.path.join(src, fileList[i])
+            size = os.path.getsize(path)
+            maxFile = fileList[i] if size > maxSize else maxFile
+            maxSize = size if size > maxSize else maxSize
+        shutil.move(os.path.join(src, maxFile), os.path.join(dst, maxFile))
 
     def filterFiles(self):
         print('start...')
