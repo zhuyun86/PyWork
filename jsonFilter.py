@@ -48,8 +48,8 @@ class MainWindow(QDialog):
         self.rad_nii_source_path = ''
         self.rad_label_source_path = ''
         self.rad_json_source_path = ''
-        self.dicom_folder_path = ''
-        self.nii_folder_path = ''
+        self.dicom_folder_path = os.getcwd()
+        self.nii_folder_path = os.getcwd()
         self.hospital_name = ''
         self.filter_checkBoxs = {}
         self.rad_checkBoxs = {}
@@ -391,7 +391,7 @@ class MainWindow(QDialog):
 
     def dicomSelect(self):
         dicom_folder_path = QFileDialog.getExistingDirectory(
-            self, 'Open Dir', os.getcwd())
+            self, 'Open Dir', self.dicom_folder_path)
         if dicom_folder_path == '':
             return
         self.dicom_folder_path = str(dicom_folder_path)
@@ -399,7 +399,7 @@ class MainWindow(QDialog):
 
     def niiSelect(self):
         nii_folder_path = QFileDialog.getExistingDirectory(
-            self, 'Open Dir', os.getcwd())
+            self, 'Open Dir', self.nii_folder_path)
         if nii_folder_path == '':
             return
         self.nii_folder_path = str(nii_folder_path)
