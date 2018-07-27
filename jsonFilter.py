@@ -10,11 +10,17 @@ from functools import partial
 from PyQt5.QtGui import *
 from PyQt5.Qt import *
 
-ExeFile = 'D:/Dcm2NiiConverter/dcm2niiConverter.exe'
 
-sys.path.append(r'D:\sigmaUtil')
+ExeFileItk = r'D:/Dcm2NiiConverter/itkDicomSeries2Nii.exe'
+ExeFileCom = r'D:/Dcm2NiiConverter/dcm2niiConverter.exe'
+
+# ExeFileItk = r'.\bin\itkDicomSeries2Nii.exe'
+# ExeFileCom = r'.\bin\dcm2niiConverter.exe'
+
+#sys.path.append(r'D:\sigmaUtil')
 # from radiomicsHandle import run
 # from radiomics_label import radiomicsFromLabel
+
 
 def join_duplicate_keys(ordered_pairs):
     """to load duplicate key json"""
@@ -48,6 +54,8 @@ class MainWindow(QDialog):
         self.filter_checkBoxs = {}
         self.rad_checkBoxs = {}
         self.save_absolute_path = r'D:\ExcelResults'
+        self.bSwitchExe = True
+        self.ExeFile = None
         self.setui()
 
     def setui(self):
@@ -59,7 +67,7 @@ class MainWindow(QDialog):
         inputFileButton = QPushButton('inputFolderSelect')
         outputFileLabel = QLabel('outputFolder')
         self.outputFileLineEdit = QLineEdit()
-        outputFileButton = QPushButton('outputFolderSelect')        
+        outputFileButton = QPushButton('outputFolderSelect')
 
         grid_folder = QGridLayout()
         grid_folder.addWidget(inputFileLabel, 0, 0)
@@ -68,11 +76,14 @@ class MainWindow(QDialog):
         grid_folder.addWidget(outputFileLabel, 1, 0)
         grid_folder.addWidget(self.outputFileLineEdit, 1, 1, 1, 2)
         grid_folder.addWidget(outputFileButton, 1, 3)
-        
+
         grid_check = QGridLayout()
-        for i, text in enumerate(["Solid", "GGO", "Mixed", "Calc", "Malign", "P_B", "P_M", "vessel intruder", "vessel connection", "R_B", "R_M"]):
+        for i, text in enumerate([
+                "Solid", "GGO", "Mixed", "Calc", "Malign", "P_B", "P_M",
+                "vessel intruder", "vessel connection", "R_B", "R_M"
+        ]):
             checkbox = QCheckBox(text)
-            grid_check.addWidget(checkbox, i//4, i%4)
+            grid_check.addWidget(checkbox, i // 4, i % 4)
             self.filter_checkBoxs[text] = checkbox
         diameterLabel = QLabel('Diameter:')
         self.minLevelLineEdit = QLineEdit()
@@ -136,18 +147,23 @@ class MainWindow(QDialog):
         HospitalLabel = QLabel('HospitalName:')
         self.HospitalLineEdit = QLineEdit(self)
         convertButton = QPushButton('Convert', self)
+        switchExeCheckbox = QCheckBox(self)
+        switchExeCheckbox.setText('itk')
+        switchExeCheckbox.stateChanged.connect(self.switchExeChanged)
+        switchExeCheckbox.setChecked(self.bSwitchExe)
 
         layout_Converter = QGridLayout(self)
-        layout_Converter.addWidget(dicomInputLabel, 0 ,0)
-        layout_Converter.addWidget(self.dicomLineEdit, 0 ,1)
-        layout_Converter.addWidget(dicomButton, 0 ,2)
+        layout_Converter.addWidget(dicomInputLabel, 0, 0)
+        layout_Converter.addWidget(self.dicomLineEdit, 0, 1)
+        layout_Converter.addWidget(dicomButton, 0, 2)
         layout_Converter.addWidget(niiOutputLabel, 1, 0)
         layout_Converter.addWidget(self.niiLineEdit, 1, 1)
         layout_Converter.addWidget(niiButton, 1, 2)
         layout_Converter.addWidget(HospitalLabel, 2, 0)
         layout_Converter.addWidget(self.HospitalLineEdit, 2, 1)
-        layout_Converter.addWidget(convertButton)
-  
+        layout_Converter.addWidget(convertButton, 2, 2)
+        layout_Converter.addWidget(switchExeCheckbox, 2, 3)
+
         group_converter.setLayout(layout_Converter)
         mainLayout.addWidget(group_converter)
 
@@ -167,9 +183,12 @@ class MainWindow(QDialog):
         layout_radiomics.addWidget(saveFileButton, 3, 3)
         # layout_radiomics.addWidget(self.checkbox_wavelet, 4, 0)
         # layout_radiomics.addWidget(self.checkbox_log, 4, 1)
-        for i, text in enumerate(["firstorder", "glcm", "shape", "glrlm", "glszm", "applyWavelet", "applyLog"]):
+        for i, text in enumerate([
+                "firstorder", "glcm", "shape", "glrlm", "glszm",
+                "applyWavelet", "applyLog"
+        ]):
             checkbox = QCheckBox(text)
-            layout_radiomics.addWidget(checkbox, 4+i//4, i%4)
+            layout_radiomics.addWidget(checkbox, 4 + i // 4, i % 4)
             self.rad_checkBoxs[text] = checkbox
         layout_radiomics.addWidget(runButton, 5, 3)
         group_radiomics.setLayout(layout_radiomics)
@@ -188,7 +207,11 @@ class MainWindow(QDialog):
         niiButton.clicked.connect(self.niiSelect)
         self.HospitalLineEdit.textChanged.connect(self.hospitalNameChanged)
         convertButton.clicked.connect(self.convertDicom)
-        for edit in [self.inputFileLineEdit, self.outputFileLineEdit, self.selectFileLineEdit, self.selectLabelLineEdit, self.selectJsonLineEdit, self.saveFileLineEdit]:
+        for edit in [
+                self.inputFileLineEdit, self.outputFileLineEdit,
+                self.selectFileLineEdit, self.selectLabelLineEdit,
+                self.selectJsonLineEdit, self.saveFileLineEdit
+        ]:
             edit.textChanged.connect(self.lineEditTextChanged)
             # edit.textChanged.connect(partial(self.lineEditTextChanged, edit))
 
@@ -239,12 +262,19 @@ class MainWindow(QDialog):
         if self.rad_nii_source_path:
             applyLog = 'applyLog' in features
             applyWavelet = 'applyWavelet' in features
-            niis_in_current_file = [f for f in os.listdir(self.rad_nii_source_path) if f.endswith('.nii')]
+            niis_in_current_file = [
+                f for f in os.listdir(self.rad_nii_source_path)
+                if f.endswith('.nii')
+            ]
             for json_file in os.listdir(self.rad_json_source_path):
-                if not json_file.endswith('.json') or 'CAD_Lung' not in json_file:
+                if not json_file.endswith(
+                        '.json') or 'CAD_Lung' not in json_file:
                     continue
                 nii_name = '{}.nii'.format(json_file.split('_CAD_Lung')[0])
-                nii_file = os.path.join(self.rad_nii_source_path, nii_name) if nii_name in niis_in_current_file else os.path.join(self.nii_source_path, nii_name)
+                nii_file = os.path.join(
+                    self.rad_nii_source_path, nii_name
+                ) if nii_name in niis_in_current_file else os.path.join(
+                    self.nii_source_path, nii_name)
                 # 如果两个文件夹都不存在，需要处理异常
                 # self.printMsg('nii file: {}'.format(nii_file))
                 if not os.path.exists(nii_file):
@@ -255,19 +285,36 @@ class MainWindow(QDialog):
                 json_file = os.path.join(self.rad_json_source_path, json_file)
                 # self.printMsg('json File: {}'.format(json_file))
                 # self.printMsg('run radiomics...')
-                print(nii_file, json_file, self.rad_json_source_path, self.save_absolute_path or r'D:\ExcelResults', applyLog, applyWavelet)
+                print(nii_file, json_file, self.rad_json_source_path,
+                      self.save_absolute_path or r'D:\ExcelResults', applyLog,
+                      applyWavelet)
                 try:
-                    run(nii_file, json_file, self.rad_json_source_path, self.save_absolute_path or r'D:\ExcelResults', re_divide=1, applyLog=applyLog, applyWavelet=applyWavelet)
+                    run(nii_file,
+                        json_file,
+                        self.rad_json_source_path,
+                        self.save_absolute_path or r'D:\ExcelResults',
+                        re_divide=1,
+                        applyLog=applyLog,
+                        applyWavelet=applyWavelet)
                     print(1111)
                 except RuntimeError:
                     try:
-                        run(nii_file, json_file, self.rad_json_source_path, self.save_absolute_path or r'D:\ExcelResults',
-                            re_divide=2, applyLog=applyLog, applyWavelet=applyWavelet)
+                        run(nii_file,
+                            json_file,
+                            self.rad_json_source_path,
+                            self.save_absolute_path or r'D:\ExcelResults',
+                            re_divide=2,
+                            applyLog=applyLog,
+                            applyWavelet=applyWavelet)
                         print(2222)
                     except RuntimeError:
                         try:
-                            run(nii_file, json_file, self.rad_json_source_path,
-                                self.save_absolute_path or r'D:\ExcelResults', re_divide=4, applyLog=applyLog,
+                            run(nii_file,
+                                json_file,
+                                self.rad_json_source_path,
+                                self.save_absolute_path or r'D:\ExcelResults',
+                                re_divide=4,
+                                applyLog=applyLog,
                                 applyWavelet=applyWavelet)
                             print(33333)
                         except RuntimeError:
@@ -280,65 +327,79 @@ class MainWindow(QDialog):
             currentFilePath = self.rad_json_source_path
             settings = {'binWidth': 25, 'symmetricalGLCM': True}
             enabledImageTypes = {"Original": {}, "Wavelet": {}}
-            niiFileList = [x for x in os.listdir(currentFilePath) if os.path.isfile(os.path.join(currentFilePath, x)) and os.path.splitext(x)[-1]=='.nii' and "label" not in x]
+            niiFileList = [
+                x for x in os.listdir(currentFilePath)
+                if os.path.isfile(os.path.join(currentFilePath, x))
+                and os.path.splitext(x)[-1] == '.nii' and "label" not in x
+            ]
             for niiFile in niiFileList:
                 print("niiFile = {}".format(niiFile))
                 name, _ = os.path.splitext(niiFile)
                 labelFile = name + "-label"
                 labelImgFile = os.path.join(currentFilePath, labelFile)
                 niiImgFile = os.path.join(currentFilePath, niiFile)
-                csvFile = os.path.join(currentFilePath, name + "_radiomics.csv")
+                csvFile = os.path.join(currentFilePath,
+                                       name + "_radiomics.csv")
                 if os.path.exists(csvFile):
                     continue
-                radiomics.run(niiImgFile, labelImgFile, features, settings, enabledImageTypes, csvFile)
+                radiomics.run(niiImgFile, labelImgFile, features, settings,
+                              enabledImageTypes, csvFile)
 
     def printMsg(self, message, color='black'):
         self.hintTextEdit.setStyleSheet('color: {}'.format(color))
         self.hintTextEdit.append(message)
 
     def inputFileSelect(self):
-        nii_source_path = QFileDialog.getExistingDirectory(self, 'Open Dir', os.getcwd())
+        nii_source_path = QFileDialog.getExistingDirectory(
+            self, 'Open Dir', os.getcwd())
         self.nii_source_path = str(nii_source_path)
         self.inputFileLineEdit.setText(self.nii_source_path)
 
     def outputFileSelect(self):
-        rad_csv_source_path = QFileDialog.getExistingDirectory(self, 'Open Dir', os.getcwd())
+        rad_csv_source_path = QFileDialog.getExistingDirectory(
+            self, 'Open Dir', os.getcwd())
         self.rad_csv_source_path = str(rad_csv_source_path)
         self.outputFileLineEdit.setText(self.rad_csv_source_path)
         self.selectFileLineEdit.setText(self.rad_csv_source_path)
         self.selectJsonLineEdit.setText(self.rad_csv_source_path)
 
     def inputNiiFileSelect(self):
-        rad_nii_source_path = QFileDialog.getExistingDirectory(self, 'Open Dir', os.getcwd())
+        rad_nii_source_path = QFileDialog.getExistingDirectory(
+            self, 'Open Dir', os.getcwd())
         self.rad_nii_source_path = str(rad_nii_source_path)
         self.selectFileLineEdit.setText(self.rad_nii_source_path)
         self.selectJsonLineEdit.setText(self.rad_nii_source_path)
 
     def inputLabelFileSelect(self):
-        rad_label_source_path = QFileDialog.getExistingDirectory(self, 'Open Dir', os.getcwd())
+        rad_label_source_path = QFileDialog.getExistingDirectory(
+            self, 'Open Dir', os.getcwd())
         self.rad_label_source_path = str(rad_label_source_path)
         self.selectLabelLineEdit.setText(self.rad_label_source_path)
         self.selectJsonLineEdit.setText(self.rad_label_source_path)
 
     def inputJsonFileSelect(self):
-        rad_json_source_path = QFileDialog.getExistingDirectory(self, 'Open Dir', os.getcwd())
+        rad_json_source_path = QFileDialog.getExistingDirectory(
+            self, 'Open Dir', os.getcwd())
         self.rad_json_source_path = str(rad_json_source_path)
         self.selectJsonLineEdit.setText(self.rad_json_source_path)
 
     def saveFileSelect(self):
-        save_absolute_path = QFileDialog.getExistingDirectory(self, 'Open Dir', os.getcwd())
+        save_absolute_path = QFileDialog.getExistingDirectory(
+            self, 'Open Dir', os.getcwd())
         self.save_absolute_path = str(save_absolute_path)
         self.saveFileLineEdit.setText(self.save_absolute_path)
 
     def dicomSelect(self):
-        dicom_folder_path = QFileDialog.getExistingDirectory(self, 'Open Dir', os.getcwd())
+        dicom_folder_path = QFileDialog.getExistingDirectory(
+            self, 'Open Dir', os.getcwd())
         if dicom_folder_path == '':
             return
         self.dicom_folder_path = str(dicom_folder_path)
         self.dicomLineEdit.setText(self.dicom_folder_path)
 
     def niiSelect(self):
-        nii_folder_path = QFileDialog.getExistingDirectory(self, 'Open Dir', os.getcwd())
+        nii_folder_path = QFileDialog.getExistingDirectory(
+            self, 'Open Dir', os.getcwd())
         if nii_folder_path == '':
             return
         self.nii_folder_path = str(nii_folder_path)
@@ -367,9 +428,15 @@ class MainWindow(QDialog):
                     redir = oldir.replace(' ', '_')
                     os.rename(oldir, redir)
 
-                with tempfile.TemporaryDirectory() as tempDir:
-                    os.system('{} {} {} {}_%f'.format(ExeFile, redir, tempDir, self.hospital_name))
-                    self._moveMaxFile(tempDir, dstDir)
+                if self.bSwitchExe:
+                    os.system('{} {} {}'.format(
+                        self.ExeFile, redir, dstDir + '/' + self.hospital_name
+                        + '_' + dirList[i] + '.nii'))
+                else:
+                    with tempfile.TemporaryDirectory() as tempDir:
+                        os.system('{} {} {} {}_%f'.format(
+                            self.ExeFile, redir, tempDir, self.hospital_name))
+                        self._moveMaxFile(tempDir, dstDir)
 
     def _moveMaxFile(self, src, dst):
         fileList = os.listdir(src)
@@ -385,6 +452,14 @@ class MainWindow(QDialog):
             maxSize = size if size > maxSize else maxSize
         shutil.move(os.path.join(src, maxFile), os.path.join(dst, maxFile))
 
+    def switchExeChanged(self, state):
+        if state:
+            self.ExeFile = ExeFileItk
+            self.bSwitchExe = True
+        else:
+            self.ExeFile = ExeFileCom
+            self.bSwitchExe = False
+
     def filterFiles(self):
         print('start...')
         if not self.nii_source_path or not self.rad_csv_source_path:
@@ -392,7 +467,9 @@ class MainWindow(QDialog):
             # QMessageBox.warning('Please select Folders!!', QMessageBox.Yes|QMessageBox.No)
             # self.printMsg('Please Select inputFolder and outputFolder!!', 'red')
             return
-        jsons = [f for f in os.listdir(self.nii_source_path) if 'CAD_Lung' in f]
+        jsons = [
+            f for f in os.listdir(self.nii_source_path) if 'CAD_Lung' in f
+        ]
         # jsons = [f for f in os.listdir(self.nii_source_path) if 'CAD_Ziwei' in f]
         for json_file in jsons:
             source_file = os.path.join(self.nii_source_path, json_file)
@@ -426,13 +503,17 @@ class MainWindow(QDialog):
             if D2 <= max_val and D2 >= min_val:
                 if not checked_list:
                     new_items.append(item)
-                elif any([verified.get(checked, 'false') == 'true' for checked in checked_list]):
+                elif any([
+                        verified.get(checked, 'false') == 'true'
+                        for checked in checked_list
+                ]):
                     new_items.append(item)
         count = len(new_items)
         if not count:
             return False
         new_nodules = {'Nodules': {'item': new_items}}
-        new_nodules['AdditionalDiseases'] = origin.get('AdditionalDiseases', {})
+        new_nodules['AdditionalDiseases'] = origin.get('AdditionalDiseases',
+                                                       {})
         new_nodules['labelVersion'] = origin.get('labelVersion')
         new_nodules['version'] = origin.get('version')
         new_nodules['count'] = str(count)
@@ -455,17 +536,21 @@ class MainWindow(QDialog):
             if D2 <= max_val and D2 >= min_val:
                 if not checked_list:
                     new_items.append(v)
-                elif any([verified.get(checked, 'false') == 'true' for checked in checked_list]):
+                elif any([
+                        verified.get(checked, 'false') == 'true'
+                        for checked in checked_list
+                ]):
                     new_items.append(v)
         count = len(new_items)
         if not count:
-            print("*"*20)
-            print("fileName does not have confirmed anyinfo",filename)
+            print("*" * 20)
+            print("fileName does not have confirmed anyinfo", filename)
             return False
         for i, item in enumerate(new_items):
             new_nodules.setdefault('Nodules', {})['count'] = str(count)
             new_nodules.setdefault('Nodules', {})['item{}'.format(i)] = item
-        new_nodules['AdditionalDiseases'] = origin.get('AdditionalDiseases', {})
+        new_nodules['AdditionalDiseases'] = origin.get('AdditionalDiseases',
+                                                       {})
         new_nodules['labelVersion'] = origin.get('labelVersion')
         new_nodules['version'] = origin.get('version')
         return new_nodules
@@ -484,8 +569,9 @@ class MainWindow(QDialog):
 
 class DuplicateDict(dict):
     '''to dump duplicate key(item) json'''
+
     def __init__(self, data):
-        self['who'] = '12sigma'     # need to have something in the dictionary 
+        self['who'] = '12sigma'  # need to have something in the dictionary
         self._data = data
 
     def __getitem__(self, key):
@@ -510,7 +596,12 @@ class DuplicateDict(dict):
                 self._value = value
                 yield key
 
-def pretty_json(s, step_size=4, multi_line_strings=False, advanced_parse=False, tab=False):
+
+def pretty_json(s,
+                step_size=4,
+                multi_line_strings=False,
+                advanced_parse=False,
+                tab=False):
     out = ''
     step = 0
     in_marks = False  # Are we in speech marks? What character will indicate we are leaving it?
@@ -521,7 +612,9 @@ def pretty_json(s, step_size=4, multi_line_strings=False, advanced_parse=False, 
         # \0x1D has the same effect as a quote ('") but will not be ouputted
         # Can be used for special formatting cases to stop text being processed by the parser
         s = re.sub(r'datetime\(([^)]*)\)', r'datetime(\x1D\g<1>\x1D)', s)
-        s = s.replace('\\x1D', chr(0X1D))  # Replace the \x1D with the single 1D character
+        s = s.replace(
+            '\\x1D',
+            chr(0X1D))  # Replace the \x1D with the single 1D character
 
     if tab:
         step_char = '\t'
@@ -582,16 +675,19 @@ def pretty_json(s, step_size=4, multi_line_strings=False, advanced_parse=False, 
             out += c
     return out
 
+
 def load_duplicate_json(filename):
     with open(filename) as fp:
         data = json.load(fp, object_pairs_hook=join_duplicate_keys)
         return data
 
+
 def dump_duplicate_json(obj, filename):
     print(1111)
     for k, v in DuplicateDict(obj).items():
         print(k, ":", v)
-    json_str = pretty_json(json.dumps(DuplicateDict(obj), ensure_ascii=False).encode('utf-8'))
+    json_str = pretty_json(
+        json.dumps(DuplicateDict(obj), ensure_ascii=False).encode('utf-8'))
     with open(filename, 'w') as fp:
         fp.write(json_str)
 

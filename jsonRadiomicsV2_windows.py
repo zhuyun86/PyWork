@@ -122,7 +122,7 @@ def calculateRadiomicsFromJson(niiFile, jsonFile,wavelet,LoG,Square,SquareRoot,L
                       int(direction[4] * (bbox_ori[1] - origin[1]) / spacing[1]), \
                       int(direction[8] * (bbox_ori[2] - origin[2]) / spacing[2]))
 
-        # sitkMask = resample_sitkImage(sitkMask, (spacing[0]/4, spacing[1]/4, spacing[2]/4))
+        sitkMask = resample_sitkImage(sitkMask, (spacing[0]/4, spacing[1]/4, spacing[2]/4))
         sitkImage = sitk.RegionOfInterest(sitkImageParent, sitkMask.GetSize(), ori_matrix)
         sitkImage.SetSpacing(spacing)
         sitkImage.SetOrigin(bbox_ori)
@@ -409,7 +409,7 @@ def run_1(nii, jsf,waveletFilter,LogFilter,Square,SquareRoot,Logarithm,\
     saveFeatures2CSVFile(features,jsf)
 
 if __name__ == '__main__':
-    filePath = r"E:\Nii_Output"
+    filePath = r"E:\Nii_Output_SHRJ"
     niiFileList = [x for x in os.listdir(filePath) if x.endswith(".nii")]
     print("niiFileList=",niiFileList)
     parser = argparse.ArgumentParser(

@@ -2,8 +2,8 @@ import os
 import shutil
 import sys
 
-HospitalName = "SHRJ"
-SrcDir = "D:/Doc_Dicom/SHRJ"
+HospitalName = "Test"
+SrcDir = "D:/Nii_Dicom"
 TempDir = 'D:/Temp'
 DstDir = 'D:/Nii_Output_' + HospitalName
 ExeFile = 'D:/Dcm2NiiConverter/dcm2niiConverter.exe'
@@ -43,7 +43,7 @@ def MoveMaxFile(dir):
         size = os.path.getsize(path)
         maxFile = fileList[i] if size > maxSize else maxFile
         maxSize = size if size > maxSize else maxSize
-    shutil.move(os.path.join(TempDir, maxFile), os.path.join(DstDir, maxFile))
+    shutil.move(os.path.join(dir, maxFile), os.path.join(DstDir, maxFile))
 
 
 if __name__ == '__main__':
