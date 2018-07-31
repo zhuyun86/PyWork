@@ -7,7 +7,7 @@ import re
 
 class HttpPost:
     def __init__(self):
-        self.url = 'http://spf.szfcweb.com/szfcweb/(S(uoruobeqvf4unje1cdbykr55))/DataSerach/CanSaleHouseSelectIndex.aspx'
+        self.url = 'http://spf.szfcweb.com/szfcweb/(S(u2uc5h3dapxwtx45l2noeh45))/DataSerach/CanSaleHouseSelectIndex.aspx'
         self.data = None
         self.header = {
             'User-Agent':
@@ -18,14 +18,14 @@ class HttpPost:
 
         self.ReadData()
 
-        for n in range(16):
+        for n in range(30):
             self.PostData(n)
 
         self.cursor.close()
         self.conn.commit()
         self.conn.close()
 
-    def PostData(self, index = 0):
+    def PostData(self, index):
         print(index)
         self.data["ctl00$MainContent$PageGridView1$ctl22$PageList"] = index
         response = requests.post(self.url, data=self.data, headers=self.header)
@@ -72,13 +72,12 @@ class HttpPost:
             if len(rec) < 6:
                 continue
 
-            pattern = re.compile(r'\d+')
-            numbers = pattern.findall(rec[0])
-            if len(numbers) < 2:
+            parts = re.findall(r'(\w+?)(\d+)幢(\d+)',rec[0])
+            if len(parts[0]) < 3:
                 continue
-            self.cursor.execute('insert into house(building,room,size,area,price)\
-             values("{:0>2}","{:0>4}","{}",{},{})'\
-             .format(numbers[-2],numbers[-1],rec[3],float(rec[4]),float(rec[5])))
+            self.cursor.execute('insert into house(addr,building,room,size,area,price)\
+             values("{}","{:0>2}","{:0>4}","{}",{},{})'\
+             .format(parts[0][0],parts[0][1],parts[0][2],rec[3],float(rec[4]),float(rec[5])))
         self.conn.commit()
 
     def ReadData(self):
