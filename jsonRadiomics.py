@@ -339,7 +339,7 @@ def calculateRadiomicsFromJson(niiFile, jsonFile,wavelet,LoG,Square,SquareRoot,L
     return features
 
     
-def run(nii, jsf,waveletFilter,LogFilter,Square,SquareRoot,Logarithm,\
+def run(nii,jsf,output,waveletFilter,LogFilter,Square,SquareRoot,Logarithm,\
                 Exponential,Gradient,LocalBinaryPattern2D,LocalBinaryPattern3D,src=None, dst=None):
     features = calculateRadiomicsFromJson(nii, jsf,waveletFilter,LogFilter,Square,SquareRoot,Logarithm,\
                 Exponential,Gradient,LocalBinaryPattern2D,LocalBinaryPattern3D)
@@ -353,10 +353,13 @@ def run(nii, jsf,waveletFilter,LogFilter,Square,SquareRoot,Logarithm,\
                 newKey = subKey+"_"+k
                 sortedFeature_Json[key][newKey] = v
 
-    _json = jsf
-    if src and dst:
-        _json = _json.replace(src.strip('/\\'), dst)
-    _json = _json.replace('.json', '_radiomics.json')
+    if output:
+        _json = output
+    else:
+        _json = jsf
+        if src and dst:
+            _json = _json.replace(src.strip('/\\'), dst)
+        _json = _json.replace('.json', '_radiomics.json')
     with open(_json,"w") as f:
         json.dump(sortedFeature_Json,f,indent=4,sort_keys=True)
     
@@ -367,6 +370,7 @@ if __name__ == '__main__':
         description='to calculate the radiomics features from input json and nii files.')
     parser.add_argument('--nii', help='input nii file')
     parser.add_argument('--json', help='input json file')
+    parser.add_argument('--output', help='output radiomics json file')
     parser.add_argument('--wavelet',help="input wavelet filter is enabled or not")
     parser.add_argument('--LoG',help="input Laplacian of Gaussian filter is enabled or not")
     parser.add_argument('--Square',help="input Square filter is enabled or not")
@@ -382,7 +386,7 @@ if __name__ == '__main__':
         import time
         # features = calculateRadiomicsFromJson(args.nii, args.json)
         startTime = time.time()
-        run(args.nii,args.json,args.wavelet,args.LoG,args.Square,args.SquareRoot,args.Logarithm,\
+        run(args.nii,args.json,args.output,args.wavelet,args.LoG,args.Square,args.SquareRoot,args.Logarithm,\
                 args.Exponential,args.Gradient,args.LocalBinaryPattern2D,args.LocalBinaryPattern3D)
         endTime = time.time()
         print("Running Time:",endTime-startTime)
