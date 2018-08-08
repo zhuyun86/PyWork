@@ -1,16 +1,20 @@
 import os
 import pydicom
-import sys
-
+import sys, threading
 
 def Desens(path):
-    ds = pydicom.dcmread(path)
+    try:
+        ds = pydicom.dcmread(path)
+    except Exception as e:
+        print('Error:', path, e)
+        return
     ds.PatientName = ''
     ds.PatientSex = ''
     ds.PatientBirthDate = ''
     ds.InstitutionName = ''
     ds.InstitutionAddress = ''
     ds.save_as(path)
+    print(path,'completed')
 
 
 def TravDir(rootdir):
@@ -22,6 +26,13 @@ def TravDir(rootdir):
         if os.path.isfile(path):
             Desens(path)
     print('Successful')
+
+def DoDesens(rootdir, cv):
+    with cv:
+        TravDir(rootdir)
+        cv.notify()
+        print('Desens:', threading.current_thread())
+
 
 
 if __name__ == '__main__':
