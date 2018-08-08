@@ -25,13 +25,13 @@ def TravDir(rootdir):
             TravDir(path)
         if os.path.isfile(path):
             Desens(path)
-    print('Successful')
 
 def DoDesens(rootdir, cv):
     with cv:
         TravDir(rootdir)
         cv.notify()
         print('Desens:', threading.current_thread())
+        print('Successful')
 
 
 

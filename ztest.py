@@ -1,2 +1,0 @@
-def tet():
-    print(globals())
