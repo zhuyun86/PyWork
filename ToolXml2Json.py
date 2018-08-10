@@ -30,13 +30,13 @@ class ToolXml2Json():
         nodule_items = nodules.setdefault('item', [])
         origin_items = root.get('Nodules', {}).get('item', [])
         verify_items = root.get('VerifiedNodules', {}).get('item', [])
-        missed_items = root.get('MissedNodules', {}).get('item', [])
+        # missed_items = root.get('MissedNodules', {}).get('item', [])
         if not isinstance(origin_items, list):
             origin_items = [origin_items]
         if not isinstance(verify_items, list):
             verify_items = [verify_items]
-        if not isinstance(missed_items, list):
-            missed_items = [missed_items]
+        # if not isinstance(missed_items, list):
+            # missed_items = [missed_items]
         for oi in origin_items:
             oi['sourceType'] = oi.pop('SourceType', '0'
                                       if int(oi['Label']) >= 0 else '1')
@@ -65,21 +65,21 @@ class ToolXml2Json():
                 for k in ['CenterX', 'CenterY', 'CenterZ']:
                     oi[k] = _vn[k]
             nodule_items.append(oi)  # 将item插入json
-        for mi in missed_items:  # MissedNodules只有中心坐标
-            oi = {'Label': mi['LabelIndex'], 'sourceType': '1'}
-            vn = oi.setdefault('VerifiedNodule',
-                               {'labelIndex': mi['LabelIndex']})
-            for k in resultKeys:
-                if k in ['CenterX', 'CenterY', 'CenterZ']:
-                    oi[k] = vn[k] = mi.get(k, '0')
-                else:
-                    v = mi.get(k, 'false')
-                    if v == '0':
-                        v = 'false'
-                    elif v == '1':
-                        v = 'true'
-                    vn[k] = v
-            nodule_items.append(oi)
+        # for mi in missed_items:  # MissedNodules只有中心坐标
+        #     oi = {'Label': mi['LabelIndex'], 'sourceType': '1'}
+        #     vn = oi.setdefault('VerifiedNodule',
+        #                        {'labelIndex': mi['LabelIndex']})
+        #     for k in resultKeys:
+        #         if k in ['CenterX', 'CenterY', 'CenterZ']:
+        #             oi[k] = vn[k] = mi.get(k, '0')
+        #         else:
+        #             v = mi.get(k, 'false')
+        #             if v == '0':
+        #                 v = 'false'
+        #             elif v == '1':
+        #                 v = 'true'
+        #             vn[k] = v
+        #     nodule_items.append(oi)
         addition = root.get('AdditionalDiseases')
         if addition:
             if isinstance(addition, list):
@@ -117,7 +117,8 @@ class ToolXml2Json():
             json.dump(data, fp, indent=4)
 
 
-def ConvertXmlFile(tool, xmlFileName):
+def ConvertXmlFile(xmlFileName):
+    tool = ToolXml2Json()
     lsFile = os.path.splitext(xmlFileName)
     if lsFile[1] != '.xml':
         return
@@ -129,22 +130,21 @@ def ConvertXmlFile(tool, xmlFileName):
     print('Convert {} to {}'.format(xmlFileName, jsonFileName))
 
 
-def TravDir(tool, rootdir):
+def TravDir(rootdir):
     filelist = os.listdir(rootdir)
     for i in range(0, len(filelist)):
         path = os.path.join(rootdir, filelist[i])
         if os.path.isdir(path):
-            TravDir(tool, path)
+            TravDir(path)
         if os.path.isfile(path):
-            ConvertXmlFile(tool, path)
+            ConvertXmlFile(path)
     print('All done!')
 
 
 if __name__ == '__main__':
 
-    tool = ToolXml2Json()
     path = sys.argv[1]
     if os.path.isdir(path):
-        TravDir(tool, path)
+        TravDir(path)
     if os.path.isfile(path):
-        ConvertXmlFile(tool, path)
+        ConvertXmlFile(path)
