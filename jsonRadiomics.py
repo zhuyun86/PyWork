@@ -127,49 +127,49 @@ def calculateRadiomicsFromJson(niiFile, jsonFile,wavelet,LoG,Square,SquareRoot,L
 
         firstOrderFeatures = firstorder.RadiomicsFirstOrder(sitkImage, sitkMask, **kwargs)
         firstOrderFeatures.enableAllFeatures()
-        firstOrderFeatures.calculateFeatures()
+        firstOrderFeatures.execute()
         firstOrderResult = features[noduleLabel].setdefault('firstorder', {})
         for (key, val) in six.iteritems(firstOrderFeatures.featureValues):
             firstOrderResult[key] = val
 
         shapeFeatures = shape.RadiomicsShape(sitkImage, sitkMask, **kwargs)
         shapeFeatures.enableAllFeatures()
-        shapeFeatures.calculateFeatures()
+        shapeFeatures.execute()
         shapeResult = features[noduleLabel].setdefault('shape', {})
         for (key, val) in six.iteritems(shapeFeatures.featureValues):
             shapeResult[key] = val
 
         glcmFeatures = glcm.RadiomicsGLCM(sitkImage, sitkMask, **kwargs)
         glcmFeatures.enableAllFeatures()
-        glcmFeatures.calculateFeatures()
+        glcmFeatures.execute()
         glcmResult = features[noduleLabel].setdefault('glcm', {})
         for (key, val) in six.iteritems(glcmFeatures.featureValues):
             glcmResult[key] = val
 
         glrlmFeatures = glrlm.RadiomicsGLRLM(sitkImage, sitkMask, **kwargs)
         glrlmFeatures.enableAllFeatures()
-        glrlmFeatures.calculateFeatures()
+        glrlmFeatures.execute()
         glrlmResult = features[noduleLabel].setdefault('glrlm', {})
         for (key, val) in six.iteritems(glrlmFeatures.featureValues):
             glrlmResult[key] = val
 
         glszmFeatures = glszm.RadiomicsGLSZM(sitkImage, sitkMask, **kwargs)
         glszmFeatures.enableAllFeatures()
-        glszmFeatures.calculateFeatures()
+        glszmFeatures.execute()
         glszmResult = features[noduleLabel].setdefault('glszm', {})
         for (key, val) in six.iteritems(glszmFeatures.featureValues):
             glszmResult[key] = val
         #added new feature of gldm
         gldmFeatures = gldm.RadiomicsGLDM(sitkImage, sitkMask, **kwargs)
         gldmFeatures.enableAllFeatures()
-        gldmFeatures.calculateFeatures()
+        gldmFeatures.execute()
         gldmFeatures = features[noduleLabel].setdefault('gldm', {})
         for (key, val) in six.iteritems(glszmFeatures.featureValues):
             gldmFeatures[key] = val
         #added new feature of ngtdm
         ngtdmFeatures = ngtdm.RadiomicsNGTDM(sitkImage, sitkMask, **kwargs)
         ngtdmFeatures.enableAllFeatures()
-        ngtdmFeatures.calculateFeatures()
+        ngtdmFeatures.execute()
         ngtdmFeatures = features[noduleLabel].setdefault('ngtdm', {})
         for (key, val) in six.iteritems(glszmFeatures.featureValues):
             ngtdmFeatures[key] = val
@@ -182,7 +182,7 @@ def calculateRadiomicsFromJson(niiFile, jsonFile,wavelet,LoG,Square,SquareRoot,L
                     exec("LoG"+filterName+"Features = "+filterName.lower()+".Radiomics"+filterName+"(logImage, sitkMask, **inputKwargs)")
                 for feature in featuresList:
                     exec("LoG"+feature+"Features.enableAllFeatures()")
-                    exec("LoG"+feature+"Features.calculateFeatures()")
+                    exec("LoG"+feature+"Features.execute()")
                 LoGFirstOrderResult = features[noduleLabel].setdefault('logFirstOrder', {})
                 LoGShapeResult = features[noduleLabel].setdefault('logShape', {})
                 LoGGLCMResult = features[noduleLabel].setdefault('logGlcm', {})
@@ -200,7 +200,7 @@ def calculateRadiomicsFromJson(niiFile, jsonFile,wavelet,LoG,Square,SquareRoot,L
                 for filterName  in featuresList: 
                     exec("wavelet"+filterName+"Features = "+filterName.lower()+".Radiomics"+filterName+"(decompositionImage, sitkMask, **inputKwargs)")
                     exec("wavelet"+filterName+"Features.enableAllFeatures()")
-                    exec("wavelet"+filterName+"Features.calculateFeatures()")
+                    exec("wavelet"+filterName+"Features.execute()")
                 waveletFirstOrderResult = features[noduleLabel].setdefault('waveletFirstOrder', {})
                 waveletShapeResult = features[noduleLabel].setdefault('waveletShape', {})
                 waveletGLCMResult = features[noduleLabel].setdefault('waveletGlcm', {})
@@ -218,7 +218,7 @@ def calculateRadiomicsFromJson(niiFile, jsonFile,wavelet,LoG,Square,SquareRoot,L
                 for filterName  in featuresList: 
                     exec("square"+filterName+"Features = "+filterName.lower()+".Radiomics"+filterName+"(decompositionImage, sitkMask, **inputKwargs)")
                     exec("square"+filterName+"Features.enableAllFeatures()")
-                    exec("square"+filterName+"Features.calculateFeatures()")
+                    exec("square"+filterName+"Features.execute()")
                 squareFirstOrderResult = features[noduleLabel].setdefault('squareFirstOrder', {})
                 squareShapeResult = features[noduleLabel].setdefault('squareShape', {})
                 squareGLCMResult = features[noduleLabel].setdefault('squareGlcm', {})
@@ -235,7 +235,7 @@ def calculateRadiomicsFromJson(niiFile, jsonFile,wavelet,LoG,Square,SquareRoot,L
                 for filterName  in featuresList: 
                     exec("squareRoot"+filterName+"Features = "+filterName.lower()+".Radiomics"+filterName+"(decompositionImage, sitkMask, **inputKwargs)")
                     exec("squareRoot"+filterName+"Features.enableAllFeatures()")
-                    exec("squareRoot"+filterName+"Features.calculateFeatures()")
+                    exec("squareRoot"+filterName+"Features.execute()")
                 squareRootFirstOrderResult = features[noduleLabel].setdefault('squareRootFirstOrder', {})
                 squareRootShapeResult = features[noduleLabel].setdefault('squareRootShape', {})
                 squareRootGLCMResult = features[noduleLabel].setdefault('squareRootGlcm', {})
@@ -252,7 +252,7 @@ def calculateRadiomicsFromJson(niiFile, jsonFile,wavelet,LoG,Square,SquareRoot,L
                 for filterName  in featuresList: 
                     exec("logarithm"+filterName+"Features = "+filterName.lower()+".Radiomics"+filterName+"(decompositionImage, sitkMask, **inputKwargs)")
                     exec("logarithm"+filterName+"Features.enableAllFeatures()")
-                    exec("logarithm"+filterName+"Features.calculateFeatures()")
+                    exec("logarithm"+filterName+"Features.execute()")
                 logarithmFirstOrderResult = features[noduleLabel].setdefault('logarithmFirstOrder', {})
                 logarithmShapeResult = features[noduleLabel].setdefault('logarithmShape', {})
                 logarithmGLCMResult = features[noduleLabel].setdefault('logarithmGlcm', {})
@@ -270,7 +270,7 @@ def calculateRadiomicsFromJson(niiFile, jsonFile,wavelet,LoG,Square,SquareRoot,L
                 for filterName  in featuresList: 
                     exec("Exponential"+filterName+"Features = "+filterName.lower()+".Radiomics"+filterName+"(decompositionImage, sitkMask, **inputKwargs)")
                     exec("Exponential"+filterName+"Features.enableAllFeatures()")
-                    exec("Exponential"+filterName+"Features.calculateFeatures()")
+                    exec("Exponential"+filterName+"Features.execute()")
                 ExponentialFirstOrderResult = features[noduleLabel].setdefault('ExponentialFirstOrder', {})
                 ExponentialShapeResult = features[noduleLabel].setdefault('ExponentialShape', {})
                 ExponentialGLCMResult = features[noduleLabel].setdefault('ExponentialGlcm', {})
@@ -287,7 +287,7 @@ def calculateRadiomicsFromJson(niiFile, jsonFile,wavelet,LoG,Square,SquareRoot,L
                 for filterName  in featuresList: 
                     exec("Gradient"+filterName+"Features = "+filterName.lower()+".Radiomics"+filterName+"(decompositionImage, sitkMask, **inputKwargs)")
                     exec("Gradient"+filterName+"Features.enableAllFeatures()")
-                    exec("Gradient"+filterName+"Features.calculateFeatures()")
+                    exec("Gradient"+filterName+"Features.execute()")
                 GradientFirstOrderResult = features[noduleLabel].setdefault('GradientFirstOrder', {})
                 GradientShapeResult = features[noduleLabel].setdefault('GradientShape', {})
                 GradientGLCMResult = features[noduleLabel].setdefault('GradientGlcm', {})
@@ -306,7 +306,7 @@ def calculateRadiomicsFromJson(niiFile, jsonFile,wavelet,LoG,Square,SquareRoot,L
                 for filterName  in featuresList: 
                     exec("LBP2D"+filterName+"Features = "+filterName.lower()+".Radiomics"+filterName+"(decompositionImage, sitkMask, **inputKwargs)")
                     exec("LBP2D"+filterName+"Features.enableAllFeatures()")
-                    exec("LBP2D"+filterName+"Features.calculateFeatures()")
+                    exec("LBP2D"+filterName+"Features.execute()")
                 LBP2DFirstOrderResult = features[noduleLabel].setdefault('LBP2DFirstOrder', {})
                 LBP2DShapeResult = features[noduleLabel].setdefault('LBP2DShape', {})
                 LBP2DGLCMResult = features[noduleLabel].setdefault('LBP2DGlcm', {})
@@ -324,7 +324,7 @@ def calculateRadiomicsFromJson(niiFile, jsonFile,wavelet,LoG,Square,SquareRoot,L
                 for filterName  in featuresList: 
                     exec("LBP3D"+filterName+"Features = "+filterName.lower()+".Radiomics"+filterName+"(decompositionImage, sitkMask, **inputKwargs)")
                     exec("LBP3D"+filterName+"Features.enableAllFeatures()")
-                    exec("LBP3D"+filterName+"Features.calculateFeatures()")
+                    exec("LBP3D"+filterName+"Features.execute()")
                 LBP3DFirstOrderResult = features[noduleLabel].setdefault('LBP3DFirstOrder', {})
                 LBP3DShapeResult = features[noduleLabel].setdefault('LBP3DShape', {})
                 LBP3DGLCMResult = features[noduleLabel].setdefault('LBP3DGlcm', {})
@@ -371,15 +371,15 @@ if __name__ == '__main__':
     parser.add_argument('--nii', help='input nii file')
     parser.add_argument('--json', help='input json file')
     parser.add_argument('--output', help='output radiomics json file')
-    parser.add_argument('--wavelet',help="input wavelet filter is enabled or not")
-    parser.add_argument('--LoG',help="input Laplacian of Gaussian filter is enabled or not")
-    parser.add_argument('--Square',help="input Square filter is enabled or not")
-    parser.add_argument('--SquareRoot',help="input SquareRoot filter is enabled or not")
-    parser.add_argument('--Logarithm',help="input Logarithm filter is enabled or not")
-    parser.add_argument('--Exponential',help="input Exponential filter is enabled or not")
-    parser.add_argument('--Gradient',help="input Gradient filter is enabled or not")
-    parser.add_argument('--LocalBinaryPattern2D',help="input LocalBinaryPattern2D filter is enabled or not")
-    parser.add_argument('--LocalBinaryPattern3D',help="input LocalBinaryPattern3D filter is enabled or not")
+    parser.add_argument('--wavelet',help="input wavelet filter is enabled or not",default=True)
+    parser.add_argument('--LoG',help="input Laplacian of Gaussian filter is enabled or not",default=True)
+    parser.add_argument('--Square',help="input Square filter is enabled or not",default=True)
+    parser.add_argument('--SquareRoot',help="input SquareRoot filter is enabled or not",default=True)
+    parser.add_argument('--Logarithm',help="input Logarithm filter is enabled or not",default=True)
+    parser.add_argument('--Exponential',help="input Exponential filter is enabled or not",default=True)
+    parser.add_argument('--Gradient',help="input Gradient filter is enabled or not",default=True)
+    parser.add_argument('--LocalBinaryPattern2D',help="input LocalBinaryPattern2D filter is enabled or not",default=True)
+    parser.add_argument('--LocalBinaryPattern3D',help="input LocalBinaryPattern3D filter is enabled or not",default=True)
     args = parser.parse_args()
 
     if os.path.exists(args.nii) and os.path.exists(args.json):
