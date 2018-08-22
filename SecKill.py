@@ -19,7 +19,7 @@ if __name__ == '__main__':
     browser.find_element_by_id('loginname').send_keys('rogbiv')
     browser.find_element_by_id('nloginpwd').send_keys('zap.1219')
     time.sleep(1)
-    browser.find_element_by_class_name('authcode-btn').click()
+    # browser.find_element_by_class_name('authcode-btn').click()
     # browser.find_element_by_id('loginsubmit').click()
     
     try:
@@ -28,41 +28,48 @@ if __name__ == '__main__':
     except BaseException as e:
         print('*'*5, e)
 
-
     browser.find_element_by_link_text('秒杀').click()
     
     browser.switch_to_window(browser.window_handles[1])
 
     lt = browser.find_elements_by_class_name('timeline_item_link_skew_time')
-    print(lt)
+    print('time:',len(lt))
     for item in lt:
         print(item.text)
-        item.click()
+        time.sleep(0.1)
+        # ele = EC.element_to_be_clickable((By.LINK_TEXT, item.text))
+        # if not ele:
+        #     continue
+        try:
+            item.click()
+        except BaseException as e:
+            print(e)
         # if item.text == '16:00':
         #     item.click()
         #     break
+        browser.execute_script('window.scrollTo(0,99999)')
         time.sleep(1)
-        lt = browser.find_elements_by_class_name('seckill_mod_goods_title')
+
+        lt = browser.find_elements_by_class_name('seckill_mod_goods ')
         for item in lt:
-            print(item.text)
-            if re.search('饮料', item.text):
+            title = item.find_element_by_class_name('seckill_mod_goods_title')
+            price = item.find_element_by_class_name('seckill_mod_goods_price_now')
+            if re.search('酒', title.text):
+                print(price.text, title.text)
                 item.click()
-                break
-        break
 
-    time.sleep(3)
-
-    browser.switch_to_window(browser.window_handles[2])
-    
-    browser.find_element_by_id('btn-onkeybuy').click()
-    browser.find_element_by_id('order-submit').click()
+    # time.sleep(3)
+    # browser.switch_to_window(browser.window_handles[2])
+    # browser.find_element_by_id('btn-onkeybuy').click()
+    # time.sleep(1)
+    # browser.find_element_by_id('order-submit').click()
     
     # browser.find_element_by_id('ctl00_MainContent_txt_Pro').send_keys(r'万象汇')
     # browser.find_element_by_name('ctl00$MainContent$ddl_RD_CODE').send_keys(r'吴江')
     # # browser.find_element_by_id('ctl00_MainContent_txt_Com').send_keys(r'华润')
     
     # btn = browser.find_element_by_id('ctl00_MainContent_bt_select')
-    # print(btn.get_attribute('type')) 
+    # print(btn.get_attribute('type'))
     # btn.click()
 
     # browser.execute_script('window.open()')
