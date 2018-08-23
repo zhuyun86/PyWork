@@ -7,39 +7,39 @@ import re
  
 if __name__ == '__main__':
     browser = webdriver.Chrome()
+
     url = 'https://www.jd.com'
     # url = r'http://spf.szfcweb.com/szfcweb/(S(qsdnn055bmgiuquegmrfli55))/DataSerach/SaleInfoProListIndex.aspx'
     browser.get(url)
+    browser.implicitly_wait(10)
 
-    login_btn = browser.find_element_by_class_name('link-login')
+    login_btn = browser.find_element(By.CLASS_NAME, 'link-login')
     login_btn.click()
 
-    browser.find_element_by_link_text('账户登录').click()
+    # browser.find_element_by_link_text('账户登录').click()
+    browser.find_element(By.XPATH, ".//*[@clstag='pageclick|keycount|login_pc_201804112|10']").click()
 
     browser.find_element_by_id('loginname').send_keys('rogbiv')
     browser.find_element_by_id('nloginpwd').send_keys('zap.1219')
-    time.sleep(1)
-    # browser.find_element_by_class_name('authcode-btn').click()
-    # browser.find_element_by_id('loginsubmit').click()
     
-    try:
-        wait = WebDriverWait(browser, 60)
-        wait.until(EC.presence_of_element_located((By.LINK_TEXT,'秒杀')))
-    except BaseException as e:
-        print('*'*5, e)
+    browser.implicitly_wait(10)
 
-    browser.find_element_by_link_text('秒杀').click()
+    wait = WebDriverWait(browser, 60)
+    # wait.until(EC.visibility_of_element_located((By.LINK_TEXT,'秒杀')))
+    wait.until(EC.visibility_of_element_located((By.XPATH, ".//*[@href='//miaosha.jd.com/']")))
+    browser.find_element_by_partial_link_text
+
+    # browser.find_element_by_link_text('秒杀').click()
+    # browser.find_element_by_xpath(".//*[@href='//miaosha.jd.com/']").click()
+    browser.find_element(By.XPATH, ".//*[@href='//miaosha.jd.com/']").click()
     
     browser.switch_to_window(browser.window_handles[1])
 
     lt = browser.find_elements_by_class_name('timeline_item_link_skew_time')
-    print('time:',len(lt))
+    print('timespan:', len(lt))
     for item in lt:
         print(item.text)
-        time.sleep(0.1)
-        # ele = EC.element_to_be_clickable((By.LINK_TEXT, item.text))
-        # if not ele:
-        #     continue
+        browser.implicitly_wait(2)
         try:
             item.click()
         except BaseException as e:
@@ -47,16 +47,16 @@ if __name__ == '__main__':
         # if item.text == '16:00':
         #     item.click()
         #     break
-        browser.execute_script('window.scrollTo(0,99999)')
-        time.sleep(1)
 
-        lt = browser.find_elements_by_class_name('seckill_mod_goods ')
+        time.sleep(1)
+        lt = browser.find_elements_by_class_name('seckill_mod_goods')
         for item in lt:
-            title = item.find_element_by_class_name('seckill_mod_goods_title')
-            price = item.find_element_by_class_name('seckill_mod_goods_price_now')
-            if re.search('酒', title.text):
-                print(price.text, title.text)
-                item.click()
+            title = item.find_element(By.CLASS_NAME, 'seckill_mod_goods_title')
+            price = item.find_element(By.CLASS_NAME, 'seckill_mod_goods_price_now')
+            href = item.find_element(By.CLASS_NAME, 'seckill_mod_goods_info_i').get_attribute('href')
+            if re.search('玩具', title.text):
+                print(price.text, title.text, href)
+                # item.click()
 
     # time.sleep(3)
     # browser.switch_to_window(browser.window_handles[2])
