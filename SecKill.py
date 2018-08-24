@@ -11,6 +11,7 @@ if __name__ == '__main__':
     url = 'https://www.jd.com'
     # url = r'http://spf.szfcweb.com/szfcweb/(S(qsdnn055bmgiuquegmrfli55))/DataSerach/SaleInfoProListIndex.aspx'
     browser.get(url)
+    browser.maximize_window()
     browser.implicitly_wait(10)
 
     login_btn = browser.find_element(By.CLASS_NAME, 'link-login')
@@ -27,7 +28,6 @@ if __name__ == '__main__':
     wait = WebDriverWait(browser, 60)
     # wait.until(EC.visibility_of_element_located((By.LINK_TEXT,'秒杀')))
     wait.until(EC.visibility_of_element_located((By.XPATH, ".//*[@href='//miaosha.jd.com/']")))
-    browser.find_element_by_partial_link_text
 
     # browser.find_element_by_link_text('秒杀').click()
     # browser.find_element_by_xpath(".//*[@href='//miaosha.jd.com/']").click()
