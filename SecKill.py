@@ -35,6 +35,7 @@ if __name__ == '__main__':
     
     browser.switch_to_window(browser.window_handles[1])
 
+    urls = []
     lt = browser.find_elements_by_class_name('timeline_item_link_skew_time')
     print('timespan:', len(lt))
     for item in lt:
@@ -56,7 +57,13 @@ if __name__ == '__main__':
             href = item.find_element(By.CLASS_NAME, 'seckill_mod_goods_info_i').get_attribute('href')
             if re.search('玩具', title.text):
                 print(price.text, title.text, href)
+                urls.append(href)
                 # item.click()
+
+    for u in urls:
+        browser.execute_script('window.open()')
+        browser.switch_to_window(browser.window_handles[-1])
+        browser.get(u)
 
     # time.sleep(3)
     # browser.switch_to_window(browser.window_handles[2])
