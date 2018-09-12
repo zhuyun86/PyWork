@@ -36,7 +36,7 @@ class ToolXml2Json():
         if not isinstance(verify_items, list):
             verify_items = [verify_items]
         # if not isinstance(missed_items, list):
-            # missed_items = [missed_items]
+        # missed_items = [missed_items]
         for oi in origin_items:
             oi['sourceType'] = oi.pop('SourceType', '0'
                                       if int(oi['Label']) >= 0 else '1')
