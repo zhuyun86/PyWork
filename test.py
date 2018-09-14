@@ -1,12 +1,23 @@
 from pyhocon import ConfigFactory
-import os
+from datetime import datetime
+import re
 
 from collections import OrderedDict
 if __name__ == '__main__':
-   parser = ConfigFactory.parse_file('test.conf')
-   print(type(parser.get('databases.mysql.username', 'default')))
-   print(parser.get('databases.active'),type(parser.get('databases.active')))
-   print(parser.get('databases.home_dir', 'default'))
-   print(parser['large-jvm-opts'])
-   print(parser['aa'],type(parser['aa']),dict(parser['aa']))
+    start_time = '明日19:35'
 
+
+    now_time = datetime.now()
+    now_y = now_time.year
+    now_m = now_time.month
+    now_d = now_time.day
+    parts = re.findall(r'(\D*?)(\d+):(\d+)', start_time)
+    print(parts)
+    
+
+    kill_time = datetime(now_y, now_m, (now_d+1 if parts[0][0] else now_d) , int(parts[0][1]), int(parts[0][2]))
+    print(kill_time)
+
+    pri = '￥888.090'
+    fp = re.findall(r'\d+.\d+', pri)
+    print(fp)

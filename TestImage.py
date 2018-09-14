@@ -3,9 +3,9 @@ import os
 import math
 import itertools
 
-path = r'./image/jd.png'
+path = r'./image/star.png'
 img = Image.open(path).convert('L')  #打开图片,convert图像类型有L,RGBA
-img = img.resize((120,120))
+img = img.resize((50, 50))
 
 def GetWinLevel(arr):
     return min(arr), max(arr), max(arr)-min(arr), sum(arr)/len(arr)
@@ -31,23 +31,23 @@ def GetBlockStyle(arr):
         if arr[0]<tup[3] and arr[1]<tup[3] and arr[2]<tup[3] and arr[3]>tup[3]:
             return '/'
         if arr[0]<tup[3] and arr[1]>tup[3] and arr[2]>tup[3] and arr[3]>tup[3]:
-            return '/'
-            # return '┘'
+            # return '/'
+            return '┘'
         if arr[0]>tup[3] and arr[1]>tup[3] and arr[2]>tup[3] and arr[3]<tup[3]:
-            return '/'
-            # return '┌'
+            # return '/'
+            return '┌'
         if arr[0]<tup[3] and arr[1]>tup[3] and arr[2]<tup[3] and arr[3]<tup[3]:
             return '\\'
         if arr[0]<tup[3] and arr[1]<tup[3] and arr[2]>tup[3] and arr[3]<tup[3]:
             return '\\'
         if arr[0]>tup[3] and arr[1]<tup[3] and arr[2]>tup[3] and arr[3]>tup[3]:
-            return '\\'
-            # return '└'
+            # return '\\'
+            return '└'
         if arr[0]>tup[3] and arr[1]>tup[3] and arr[2]<tup[3] and arr[3]>tup[3]:
-            return '\\'
-            # return '┐'
+            # return '\\'
+            return '┐'
         else:
-            return ' '
+            return '.'
 
 if __name__ == '__main__':
     with open('./image/pixelation_{}.txt'.format(os.path.basename(os.path.splitext(path)[0])), 'w') as f: 
