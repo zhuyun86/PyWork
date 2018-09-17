@@ -38,16 +38,13 @@ class CSecKill():
         lt = self.browser.find_elements_by_class_name(
             'timeline_item_link_skew_time')
         print('timespan:', len(lt))
-        for item_time in lt:
+        for idx, item_time in enumerate(lt):
             print(item_time.text)
             self.browser.implicitly_wait(2)
             try:
                 item_time.click()
             except BaseException as e:
                 print(e)
-            # if item_time.text == '16:00':
-            #     item_time.click()
-            #     break
 
             time.sleep(1)
             lt = self.browser.find_elements_by_class_name('seckill_mod_goods')
@@ -69,25 +66,9 @@ class CSecKill():
         self.browser.switch_to_window(self.browser.window_handles[2])
         self.browser.get(url)
 
-        now_time = datetime.now()
-        now_y = now_time.year
-        now_m = now_time.month
-        now_d = now_time.day
-        parts = re.findall(r'(\D*?)(\d+):(\d+)', start_time)
-        if len(parts[0]) != 3:
-            return
-
-        kill_time = datetime(now_y, now_m, (now_d + 1
-                                            if parts[0][0] else now_d),
-                             int(parts[0][1]), int(parts[0][2]))
-
-        # if now_time < kill_time:
         price_old = 0
-        while now_time < kill_time:
-            now_time = datetime.now()
-            delta_time = kill_time - now_time
-            print(delta_time)
 
+        while True:
             self.browser.refresh()
             p_price = self.browser.find_element_by_class_name('p-price')
             price_new = float(re.findall(r'\d+.\d+', p_price.text)[0])
@@ -97,7 +78,7 @@ class CSecKill():
             if price_new < price_old:
                 break
             price_old = price_new
-        
+
         self.browser.implicitly_wait(1)
         btn_onkeybuy = self.browser.find_element_by_id('btn-onkeybuy')
         btn_onkeybuy.click()
@@ -105,6 +86,52 @@ class CSecKill():
         self.browser.implicitly_wait(1)
         btn_submit = self.browser.find_element_by_id('order-submit')
         btn_submit.click()
+
+    def GetCountdown(self):
+        if len(self.browser.window_handles) < 2:
+            self.browser.execute_script('window.open()')
+        self.browser.switch_to_window(self.browser.window_handles[1])
+        self.browser.get('https://miaosha.jd.com/')
+
+        lt = self.browser.find_elements_by_class_name(
+            'timeline_item_link_skew_time')
+        time_span = 1
+        for idx, item_time in enumerate(lt):
+            self.browser.implicitly_wait(2)
+            try:
+                item_time.click()
+            except BaseException as e:
+                print(e)
+
+            now_time = datetime.now()
+            now_y = now_time.year
+            now_m = now_time.month
+            now_d = now_time.day
+            parts = re.findall(r'(\D*?)(\d+):(\d+)', item_time.text)
+
+            kill_time = datetime(now_y, now_m, (now_d + 1
+                                                if parts[0][0] else now_d),
+                                 int(parts[0][1]), int(parts[0][2]))
+            print(kill_time)
+
+            time.sleep(1)
+            pre_sec = -1
+            while idx == time_span:
+                hor = self.browser.find_elements_by_class_name('hour')
+                mnt = self.browser.find_elements_by_class_name('minutes')
+                sec = self.browser.find_elements_by_class_name('seconds')
+                print(':'.join([hor[idx].text, mnt[idx].text, sec[idx].text]))
+
+                cur_sec = int(sec[idx].text)
+                if pre_sec == -1:
+                    pre_sec = cur_sec
+                if pre_sec > cur_sec:
+                    cur_time = datetime.now()
+                    deltat = kill_time - cur_time
+                    print('pc_time:', deltat)
+                    print('killtime:', item_time.text, ':'.join([hor[idx].text, mnt[idx].text, sec[idx].text]))
+                    return kill_time, ':'.join([hor[idx].text, mnt[idx].text, sec[idx].text])
+                pre_sec = cur_sec
 
 
 if __name__ == '__main__':

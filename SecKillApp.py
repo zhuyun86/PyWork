@@ -6,12 +6,15 @@ from PyQt5 import QtWidgets
 
 from SecKill import CSecKill
 
+from datetime import timedelta
+
 
 class SecKillForm(QtWidgets.QDialog):
     def __init__(self):
         QtWidgets.QDialog.__init__(self)
         self.ui = Ui_SecKill()
         self.ui.setupUi(self)
+        self.timer_id = 0
 
         self.__seckill = None
 
@@ -50,9 +53,7 @@ class SecKillForm(QtWidgets.QDialog):
             for index, url in enumerate(urls):
                 self.ui.tw_goods.insertRow(index)
                 tw_item = [
-                    QtWidgets.QTableWidgetItem(
-                        
-                    ),
+                    QtWidgets.QTableWidgetItem(),
                     QtWidgets.QTableWidgetItem(),
                     QtWidgets.QTableWidgetItem(),
                     QtWidgets.QTableWidgetItem()
@@ -68,15 +69,30 @@ class SecKillForm(QtWidgets.QDialog):
         self.ui.le_time.setText(self.ui.tw_goods.item(item.row(), 0).text())
 
     def KillGoods(self):
-        url = self.ui.le_url.text()
-        time = self.ui.le_time.text()
-        if not (url and time):
-            return
         try:
             seckill = self.getSeckill()
-            seckill.KillGoods(url, time)
+            kill_time, countdown_time = seckill.GetCountdown()
+            print('killgoods', kill_time, countdown_time)
+            cd = countdown_time.split(':')
+            delta = timedelta(0, int(cd[2]), 0, 0, int(cd[1]), int(cd[0]))
         except BaseException as e:
             print('Error:', e)
+
+        self.timer_id = self.startTimer(delta.seconds)
+
+        le_url = self.ui.le_url.text()
+        le_time = self.ui.le_time.text()
+        if not (le_url and le_time):
+            return
+        try:
+            seckill.KillGoods(le_url, le_time)
+        except BaseException as e:
+            print('Error:', e)
+
+    def timerEvent(self, evt):
+        if evt.timerId() == self.timer_id:
+            self.killTimer(self.timer_id)
+            print('timer:', evt.timerId())
 
 
 if __name__ == '__main__':
