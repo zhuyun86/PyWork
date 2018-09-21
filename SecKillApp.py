@@ -1,4 +1,4 @@
-import sys, os
+import sys, os, re
 from SecKillUI import Ui_SecKill
 from PyQt5.QtGui import *
 from PyQt5.Qt import *
@@ -6,7 +6,7 @@ from PyQt5 import QtWidgets
 
 from SecKill import CSecKill
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 
 class SecKillForm(QtWidgets.QDialog):
@@ -14,7 +14,7 @@ class SecKillForm(QtWidgets.QDialog):
         QtWidgets.QDialog.__init__(self)
         self.ui = Ui_SecKill()
         self.ui.setupUi(self)
-        self.timer_id = 0
+        self.timer_id = None
 
         self.__seckill = None
 
@@ -50,6 +50,7 @@ class SecKillForm(QtWidgets.QDialog):
             urls = []
             seckill = self.getSeckill()
             seckill.SearchGoods(goods_name, urls)
+            self.ui.tw_goods.clear()
             for index, url in enumerate(urls):
                 self.ui.tw_goods.insertRow(index)
                 tw_item = [
@@ -78,10 +79,25 @@ class SecKillForm(QtWidgets.QDialog):
         except BaseException as e:
             print('Error:', e)
 
-        self.timer_id = self.startTimer(delta.seconds)
-
         le_url = self.ui.le_url.text()
         le_time = self.ui.le_time.text()
+
+        now_y = kill_time.year
+        now_m = kill_time.month
+        now_d = kill_time.day
+        parts = re.findall(r'(\D*?)(\d+):(\d+)', le_time)
+
+        set_time = datetime(now_y, now_m, (now_d + 1
+                                           if parts[0][0] else now_d),
+                            int(parts[0][1]), int(parts[0][2]))
+
+        delta += set_time - kill_time
+        if self.timer_id:
+            self.killTimer(self.timer_id)
+            self.timer_id = None
+        self.timer_id = self.startTimer(delta.seconds * 1000)
+        print(delta, delta.seconds)
+
         if not (le_url and le_time):
             return
         try:
@@ -91,8 +107,12 @@ class SecKillForm(QtWidgets.QDialog):
 
     def timerEvent(self, evt):
         if evt.timerId() == self.timer_id:
+            print('order')
+            seckill = self.getSeckill()
+            seckill.OrderSubmit()
             self.killTimer(self.timer_id)
-            print('timer:', evt.timerId())
+            self.timer_id = None
+            print('submit!')
 
 
 if __name__ == '__main__':

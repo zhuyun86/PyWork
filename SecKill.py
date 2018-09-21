@@ -34,6 +34,7 @@ class CSecKill():
             self.browser.execute_script('window.open()')
         self.browser.switch_to_window(self.browser.window_handles[1])
         self.browser.get('https://miaosha.jd.com/')
+        self.browser.maximize_window()
 
         lt = self.browser.find_elements_by_class_name(
             'timeline_item_link_skew_time')
@@ -66,19 +67,22 @@ class CSecKill():
         self.browser.switch_to_window(self.browser.window_handles[2])
         self.browser.get(url)
 
-        price_old = 0
+        # price_old = 0
 
-        while True:
-            self.browser.refresh()
-            p_price = self.browser.find_element_by_class_name('p-price')
-            price_new = float(re.findall(r'\d+.\d+', p_price.text)[0])
-            print(price_new)
-            if not price_old:
-                price_old = price_new
-            if price_new < price_old:
-                break
-            price_old = price_new
+        # while True:
+        #     self.browser.refresh()
+        #     p_price = self.browser.find_element_by_class_name('p-price')
+        #     price_new = float(re.findall(r'\d+.\d+', p_price.text)[0])
+        #     print(price_new)
+        #     if not price_old:
+        #         price_old = price_new
+        #     if price_new < price_old:
+        #         break
+        #     price_old = price_new
 
+        # self.OrderSubmit()
+
+    def OrderSubmit(self):
         self.browser.implicitly_wait(1)
         btn_onkeybuy = self.browser.find_element_by_id('btn-onkeybuy')
         btn_onkeybuy.click()
