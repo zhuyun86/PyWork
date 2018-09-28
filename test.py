@@ -1,23 +1,18 @@
-from pyhocon import ConfigFactory
-from datetime import datetime
-import re
+import winreg
 
-from collections import OrderedDict
 if __name__ == '__main__':
-    start_time = '明日19:35'
-
-
-    now_time = datetime.now()
-    now_y = now_time.year
-    now_m = now_time.month
-    now_d = now_time.day
-    parts = re.findall(r'(\D*?)(\d+):(\d+)', start_time)
-    print(parts)
-    
-
-    kill_time = datetime(now_y, now_m, (now_d+1 if parts[0][0] else now_d) , int(parts[0][1]), int(parts[0][2]))
-    print(kill_time)
-
-    pri = '￥888.090'
-    fp = re.findall(r'\d+.\d+', pri)
-    print(fp)
+    try:
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU", 0, winreg.KEY_WRITE|winreg.KEY_READ)
+        i = 0
+        lt = []
+        while 1:
+            name, value, type = winreg.EnumValue(key, i)
+            # value, type = winreg.QueryValueEx(key, "MinimizedStateTabletModeOff")
+            lt.append(name)
+            i += 1
+    except BaseException as e:
+        print(e)
+    print(lt)
+    for v in lt:
+        # winreg.DeleteKey(key, v)
+        winreg.DeleteValue(key, v)
