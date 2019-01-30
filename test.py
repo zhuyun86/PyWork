@@ -36,6 +36,7 @@ class B(A):
         # super(B, self).test()
         getattr(super(type(self), self), self.test.__name__)()
 
+
 def testVTK():
     print(vtk.VTK_VERSION, sys.version)
 
@@ -72,16 +73,16 @@ def testVTK():
     coneActor1.GetProperty().SetOpacity(0.5)
     # coneActor2.GetProperty().SetOpacity(0.8)
 
-    xc,yc,zc = 3,6,12
+    xc, yc, zc = 3, 6, 12
     xCoords = vtk.vtkFloatArray()
     yCoords = vtk.vtkFloatArray()
     zCoords = vtk.vtkFloatArray()
     for i in range(xc):
-        xCoords.InsertNextValue(i*i)
+        xCoords.InsertNextValue(i * i)
     for i in range(yc):
-        yCoords.InsertNextValue(i*i)
+        yCoords.InsertNextValue(i * i)
     for i in range(zc):
-        zCoords.InsertNextValue(i*i)
+        zCoords.InsertNextValue(i * i)
     rgrid = vtk.vtkRectilinearGrid()
     rgrid.SetDimensions(xc, yc, zc)
     rgrid.SetXCoordinates(xCoords)
@@ -89,7 +90,7 @@ def testVTK():
     rgrid.SetZCoordinates(zCoords)
     plane = vtk.vtkRectilinearGridGeometryFilter()
     plane.SetInputData(rgrid)
-    plane.SetExtent(0,xc-1,0,yc-1,0,zc-1)
+    plane.SetExtent(0, xc - 1, 0, yc - 1, 0, zc - 1)
     mapper = vtk.vtkDataSetMapper()
     mapper.SetInputConnection(plane.GetOutputPort())
     # mapper.SetInputData(rgrid)
@@ -114,30 +115,42 @@ def testVTK():
     iren.Start()
 
 
-
-
 from transitions import Machine
+
+
 # 定义一个自己的类
 class Matter(object):
     pass
+
+
 model = Matter()
 
-
 # 状态定义
-states=['solid', 'liquid', 'gas', 'plasma']
-
+states = ['solid', 'liquid', 'gas', 'plasma']
 
 # 定义状态转移
 # The trigger argument defines the name of the new triggering method
-transitions = [
-    {'trigger': 'melt', 'source': 'solid', 'dest': 'liquid' },
-    {'trigger': 'evaporate', 'source': 'liquid', 'dest': 'gas'},
-    {'trigger': 'sublimate', 'source': 'solid', 'dest': 'gas'},
-    {'trigger': 'ionize', 'source': 'gas', 'dest': 'plasma'}]
-
+transitions = [{
+    'trigger': 'melt',
+    'source': 'solid',
+    'dest': 'liquid'
+}, {
+    'trigger': 'evaporate',
+    'source': 'liquid',
+    'dest': 'gas'
+}, {
+    'trigger': 'sublimate',
+    'source': 'solid',
+    'dest': 'gas'
+}, {
+    'trigger': 'ionize',
+    'source': 'gas',
+    'dest': 'plasma'
+}]
 
 # 初始化
-machine = Machine(model=model, states=states, transitions=transitions, initial='solid')
+machine = Machine(
+    model=model, states=states, transitions=transitions, initial='solid')
 
 
 def testSM():
@@ -151,7 +164,8 @@ def testSM():
 
     print(model.state)
 
-    print(list(range(0,9,2)))
+    print(list(range(0, 9, 2)))
+
 
 def testPolyData():
     src = vtk.vtkConeSource()
@@ -173,14 +187,44 @@ def testPolyData():
     cells.InsertNextCell(2, (1, 3))
     cells.InsertNextCell(2, (1, 2))
     cells.InsertNextCell(2, (2, 3))
+    verts = vtk.vtkCellArray()
+    verts.InsertNextCell(1, (0, ))
+    verts.InsertNextCell(1, (1, ))
+    verts.InsertNextCell(1, (2, ))
+    verts.InsertNextCell(1, (3, ))
+    polys = vtk.vtkCellArray()
+    polys.InsertNextCell(3, (0,1,2))
+    polys.InsertNextCell(3, (0,1,3))
+    polys.InsertNextCell(3, (0,2,3))
+    polys.InsertNextCell(3, (1,2,3))
     polydata.SetPoints(pts)
     polydata.SetLines(cells)
+    polydata.SetVerts(verts)
+    polydata.SetPolys(polys)
 
+    scalars = vtk.vtkIntArray()
+    conePointDataPointer = polydata.GetPointData()
+    conePolyDataPointer = polydata
+    scalars.SetNumberOfTuples(conePolyDataPointer.GetNumberOfPoints())
+    scalars.SetNumberOfComponents(1)
+    for i in range(conePolyDataPointer.GetNumberOfPoints()):
+        scalars.SetTuple1(i, i)
+    conePointDataPointer.SetScalars(scalars)
+
+    # pColorTable = vtk.vtkLookupTable()
+    # pColorTable.SetNumberOfColors(4)
+    # pColorTable.SetTableValue(0, 1.0, 0.0, 0.0, 1.0)
+    # pColorTable.SetTableValue(1, 0.0, 1.0, 0.0, 1.0)
+    # pColorTable.SetTableValue(2, 1.0, 1.0, 0.0, 1.0)
+    # pColorTable.SetTableValue(3, 0.0, 0.0, 1.0, 1.0)
+    # pColorTable.Build()
     # mapper = vtk.vtkPolyDataMapper()
     # mapper.SetInputData(polydata)
+    # mapper.SetScalarRange(0, 3)
+    # mapper.SetLookupTable(pColorTable)
     # actor = vtk.vtkActor()
     # actor.SetMapper(mapper)
-    
+
     # actor.GetProperty().SetColor(0,1,0)
     # actor.GetProperty().SetLineWidth(10)
     # actor.GetProperty().SetRenderLinesAsTubes(True)
@@ -205,8 +249,11 @@ def testPolyData():
     mapper.SetInputConnection(cleanFilter.GetOutputPort())
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
-    actor.GetProperty().SetOpacity(0.4)
-    actor.GetProperty().SetLineWidth(10)
+    # actor.GetProperty().SetOpacity(0.4)
+    actor.GetProperty().SetLineWidth(5)
+    actor.GetProperty().SetPointSize(10)
+    actor.GetProperty().SetRenderLinesAsTubes(True)
+    actor.GetProperty().SetRenderPointsAsSpheres(True)
 
     ren1 = vtk.vtkRenderer()
     ren1.AddActor(actor)
@@ -224,12 +271,53 @@ def testPolyData():
     iren.Initialize()
     iren.Start()
 
-def testGeo():
-    p1 = (2,0,0)
-    p2 = (0,1,0)
-    print(vtk.vtkLine.DistanceToLine((0,0,0),p1,p2))
-    print(vtk.vtkMath.Distance2BetweenPoints(p1, p2))
 
+def testGeo():
+    p1 = (2, 0, 0)
+    p2 = (0, 1, 0)
+    t = vtk.reference(1)
+    closest = [0, 0, 0]
+    dtl = vtk.vtkLine.DistanceToLine((0, 0, 0), p1, p2, t, closest)
+    print(dtl, t, closest)
+    print((vtk.vtkMath.Distance2BetweenPoints(p1, p2)))
+
+
+    p = [1,2,3]
+    project = [0,0,0]
+    plane = vtk.vtkPlane()
+    plane.SetOrigin(0,0,0)
+    plane.SetNormal(0,0,1)
+    plane.ProjectPoint(p,project)
+    print(p, project)
+
+    m = vtk.vtkMatrix4x4()
+    m.SetElement(0, 0, 1)
+    m.SetElement(0, 1, 2)
+    m.SetElement(0, 2, 3)
+    m.SetElement(0, 3, 4)
+    m.SetElement(1, 0, 2)
+    m.SetElement(1, 1, 2)
+    m.SetElement(1, 2, 3)
+    m.SetElement(1, 3, 4)
+    m.SetElement(2, 0, 3)
+    m.SetElement(2, 1, 2)
+    m.SetElement(2, 2, 3)
+    m.SetElement(2, 3, 4)
+    m.SetElement(3, 0, 4)
+    m.SetElement(3, 1, 2)
+    m.SetElement(3, 2, 3)
+    m.SetElement(3, 3, 4)
+
+    transform = vtk.vtkTransform()
+    transform.SetMatrix(m)
+
+    normalProjection = [1]*3
+    transform.TransformFloatPoint(normalProjection)
+    perspectiveTrans = vtk.vtkPerspectiveTransform()
+    perspectiveTrans.SetMatrix(m)
+    perspectiveProjection = [2]*3
+    perspectiveTrans.TransformFloatPoint(perspectiveProjection)
+    print(m, normalProjection, perspectiveProjection)
 
 import vtk
 if __name__ == '__main__':
