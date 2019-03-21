@@ -9,6 +9,8 @@ import functools
 
 from collections import defaultdict, namedtuple
 
+import vtk
+import glob
 
 def infer_call(func):
     '''decorator function to call super method
@@ -193,10 +195,10 @@ def testPolyData():
     verts.InsertNextCell(1, (2, ))
     verts.InsertNextCell(1, (3, ))
     polys = vtk.vtkCellArray()
-    polys.InsertNextCell(3, (0,1,2))
-    polys.InsertNextCell(3, (0,1,3))
-    polys.InsertNextCell(3, (0,2,3))
-    polys.InsertNextCell(3, (1,2,3))
+    polys.InsertNextCell(3, (0, 1, 2))
+    polys.InsertNextCell(3, (0, 1, 3))
+    polys.InsertNextCell(3, (0, 2, 3))
+    polys.InsertNextCell(3, (1, 2, 3))
     polydata.SetPoints(pts)
     polydata.SetLines(cells)
     polydata.SetVerts(verts)
@@ -279,47 +281,98 @@ def testGeo():
     closest = [0, 0, 0]
     dtl = vtk.vtkLine.DistanceToLine((0, 0, 0), p1, p2, t, closest)
     print(dtl, t, closest)
-    print((vtk.vtkMath.Distance2BetweenPoints(p1, p2)))
+    print(vtk.vtkMath.Distance2BetweenPoints(p1, p2))
 
-
-    p = [1,2,3]
-    project = [0,0,0]
+    p = [1, 2, 3]
+    project = [0, 0, 0]
     plane = vtk.vtkPlane()
-    plane.SetOrigin(0,0,0)
-    plane.SetNormal(0,0,1)
-    plane.ProjectPoint(p,project)
-    print(p, project)
+    plane.SetOrigin(0, 0, 0)
+    plane.SetNormal(0, 0, 1)
+    plane.ProjectPoint(p, project)
+    print('distance:', p, project)
 
     m = vtk.vtkMatrix4x4()
     m.SetElement(0, 0, 1)
-    m.SetElement(0, 1, 2)
-    m.SetElement(0, 2, 3)
-    m.SetElement(0, 3, 4)
-    m.SetElement(1, 0, 2)
+    m.SetElement(0, 1, 0)
+    m.SetElement(0, 2, 0)
+    m.SetElement(0, 3, 0)
+    m.SetElement(1, 0, 0)
     m.SetElement(1, 1, 2)
-    m.SetElement(1, 2, 3)
-    m.SetElement(1, 3, 4)
-    m.SetElement(2, 0, 3)
-    m.SetElement(2, 1, 2)
+    m.SetElement(1, 2, 0)
+    m.SetElement(1, 3, 0)
+    m.SetElement(2, 0, 0)
+    m.SetElement(2, 1, 0)
     m.SetElement(2, 2, 3)
-    m.SetElement(2, 3, 4)
-    m.SetElement(3, 0, 4)
-    m.SetElement(3, 1, 2)
-    m.SetElement(3, 2, 3)
+    m.SetElement(2, 3, 0)
+    m.SetElement(3, 0, 0)
+    m.SetElement(3, 1, 0)
+    m.SetElement(3, 2, 0)
     m.SetElement(3, 3, 4)
 
     transform = vtk.vtkTransform()
     transform.SetMatrix(m)
 
-    normalProjection = [1]*3
-    transform.TransformFloatPoint(normalProjection)
+    normalProjection = [1.0] * 3
+    mNorm = transform.TransformFloatPoint(normalProjection)
     perspectiveTrans = vtk.vtkPerspectiveTransform()
     perspectiveTrans.SetMatrix(m)
-    perspectiveProjection = [2]*3
-    perspectiveTrans.TransformFloatPoint(perspectiveProjection)
-    print(m, normalProjection, perspectiveProjection)
+    perspectiveProjection = [2] * 3
+    mPersp = perspectiveTrans.TransformFloatPoint(perspectiveProjection)
+    # m.Identity()
+    print('transform:', m.Determinant(), mNorm, mPersp,
+          m.MultiplyPoint((1, 1, 1, 1)))
 
-import vtk
+
+def dec1(t1, t2):
+    def dec(f):
+        def wrap(*args, **kw):
+            print(t1)
+            print(type(args), type(kw))
+            f(*args, **kw)
+            print(t2)
+        return wrap
+    return dec
+
+@dec1('ac', 123)
+def test(txt):
+    print(txt)
+
+def testMatirx():
+    m3 = vtk.vtkMatrix3x3()
+    print(type(m3))
+    m31 = vtk.vtkMatrix3x3()
+    v3 = [1,0,0,0,2,0,0,0,3]
+    v31 = [2,2,2]
+    v32 = [2,2,2]
+    m3.DeepCopy(v3)
+    m3.MultiplyPoint(v31, v32)
+    vtk.vtkMatrix3x3.Invert(m3,m31)
+    m3.Transpose()
+    m3.Adjoint(m3,m31)
+    print(m3.Determinant())
+    print(m3.IsA('vtkMatrix3x3'), type(m3))
+
+    res = m31.GetData()
+    print('m31',res, type(res))
+    ls = []
+    for i in range(3):
+        for j in range(3):
+            ls.append(m3.GetElement(i,j))
+    print(ls)
+
+
+import itk
+def testITK():
+    print(dir(itk.Version))
+    print(itk.Version.__doc__)
+    print(itk.Version.GetITKVersion(), itk.Version.GetITKSourceVersion(), itk.Version.GetGlobalWarningDisplay() , itk.Version.GetITKMinorVersion())
+
+
 if __name__ == '__main__':
-    testGeo()
-    testPolyData()
+    testMatirx()
+
+    # print('glob', glob.glob(r'D:\work\Bat\*.py'))
+    # for i in glob.iglob(r'D:\work\Bat\*.py'):
+    #     print(i)
+    # testGeo()
+    # testPolyData()
