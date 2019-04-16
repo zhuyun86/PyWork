@@ -3,10 +3,10 @@ import shutil
 import sys
 
 HospitalName = "Test"
-SrcDir = "D:/Nii_Dicom"
+SrcDir = r"C:\Users\12sigma\Desktop\bad"
 TempDir = 'D:/Temp'
 DstDir = 'D:/Nii_Output_' + HospitalName
-ExeFile = 'D:/Dcm2NiiConverter/dcm2niiConverter.exe'
+ExeFile = r'C:\Users\12sigma\Desktop\test\exes\dcm2niix.exe'
 
 
 def Convert(rootdir):
@@ -24,8 +24,7 @@ def Convert(rootdir):
                 shutil.rmtree(TempDir, True)
             os.mkdir(TempDir)
 
-            os.system('{} {} {} {}_%f'.format(ExeFile, redir, TempDir,
-                                              HospitalName))
+            os.system('{} {} {} {}_%f'.format(ExeFile, '-o', TempDir, redir))
             MoveMaxFile(TempDir)
 
             if os.path.exists(TempDir):

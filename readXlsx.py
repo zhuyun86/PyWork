@@ -86,6 +86,7 @@ def readPathologicalFeatures():
                 fw.write(res)
 
 if __name__ == '__main__':
+    print(sys.argv, sys.getdefaultencoding(), sys.getfilesystemencoding(), sys.platform)
 
-    readPathologicalFeatures()
-    readGeneMutation()
+    # readPathologicalFeatures()
+    # readGeneMutation()

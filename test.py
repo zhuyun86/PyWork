@@ -367,9 +367,31 @@ def testITK():
     print(itk.Version.__doc__)
     print(itk.Version.GetITKVersion(), itk.Version.GetITKSourceVersion(), itk.Version.GetGlobalWarningDisplay() , itk.Version.GetITKMinorVersion())
 
+class Test(object):
+    def __init__(self):
+        self.age = 18
+        self.test()
 
+    name = 'App'
+    def test(self):
+        return 'test123'
+
+xx = {'x': -10, 'z': -100}
+def testEval():
+    x = 1
+    z = 10
+    xx = {'x':-1, 'y':-2}
+    print(eval('x+y+z', globals(), xx))
+    eval('print(math.pi)')
+
+z = 100
+y= 2
+x= 11
 if __name__ == '__main__':
-    testMatirx()
+    # testMatirx()
+    testEval()
+
+
 
     # print('glob', glob.glob(r'D:\work\Bat\*.py'))
     # for i in glob.iglob(r'D:\work\Bat\*.py'):
